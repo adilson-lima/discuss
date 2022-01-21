@@ -19,14 +19,19 @@ defmodule Discuss.CommentsChannel do
     IO.inspect(content)
 
     topic = socket.assigns.topic
+    user_id = socket.assigns.user_id
+
+    IO.inspect("++++++++++++++++++++++++++")
+    IO.inspect(user_id)
 
     changeset =
       topic
-      |> build_assoc(:comments)
+      |> build_assoc(:comments, user_id: user_id)
       |> Comment.changeset(%{content: content})
 
     case Repo.insert(changeset) do
       {:ok, comment} ->
+        broadcast!(socket, "comments:#{socket.assigns.topic.id}:new", %{comment: comment})
         {:reply, :ok, socket}
 
       {:error, _reason} ->
